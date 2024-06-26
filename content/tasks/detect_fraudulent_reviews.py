@@ -15,24 +15,21 @@ def detect_fraudulent_reviews():
     reviews = Review.objects.filter(
         created_at__gte=start,
         created_at__lte=end
-    ).values('user_id', 'content_id', 'score', 'timestamp')
+    ).values('user', 'content', 'score', 'created_at')
 
     df = pd.DataFrame(reviews)
-
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df['hour'] = df['timestamp'].dt.hour
-    features = df[['score', 'hour']]
+    df['created_at'] = df['created_at'].apply(lambda x: x.timestamp())
+    features = df[['score', 'created_at']]
 
     model = IsolationForest(contamination=0.2)
     df['anomaly'] = model.fit_predict(features)
 
     anomalies = df[df['anomaly'] == -1]
-    print(anomalies)
 
+    reviews_to_update = []
     for anomaly in anomalies.itertuples():
-        review = Review.objects.get(id=anomaly.Index)
+        review = Review(id=anomaly.id)
         review.is_fraud = True
-        review.save()
+        reviews_to_update.append(review)
 
-    return
-
+    Review.objects.bulk_update(reviews_to_update, ['is_fraud'])

@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'BitPin.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bitpin',  # TODO: Move these vars to env file or smith.
+        'NAME': 'bitpin',
         'USER': 'user',
         'PASSWORD': 'password',
         'HOST': 'localhost',
